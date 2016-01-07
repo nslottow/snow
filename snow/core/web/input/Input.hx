@@ -21,15 +21,22 @@ typedef WebGamepad = {
     timestamp : Float
 }
 
+typedef WebTouch = {
+    last_x : Float,
+    last_y : Float
+}
+
 @:allow(snow.system.input.Input)
 class Input implements snow.modules.interfaces.Input {
 
     var active_gamepads : Map<Int, WebGamepad>;
     var gamepads_supported : Bool = false;
 
+    var touches : Map<Int, WebTouch>;
+
     var system : snow.system.input.Input;
 
- 	function new( _system:snow.system.input.Input ) system = _system;
+    function new( _system:snow.system.input.Input ) system = _system;
 
     function init() {
 
@@ -41,6 +48,9 @@ class Input implements snow.modules.interfaces.Input {
             //initialize gamepads if they exist
         active_gamepads = new Map();
         gamepads_supported = (get_gamepad_list() != null);
+
+            //initialize touch info
+        touches = new Map<Int, WebTouch>();
 
             //flag the state of deviceorientation api
         if( untyped __js__('window.DeviceOrientationEvent') ) {
@@ -75,6 +85,7 @@ class Input implements snow.modules.interfaces.Input {
 
         window.handle.addEventListener('touchstart', on_touchdown);
         window.handle.addEventListener('touchend',   on_touchup);
+        window.handle.addEventListener('touchcancel', on_touchup);
         window.handle.addEventListener('touchmove',  on_touchmove);
 
     } //listen
@@ -501,7 +512,7 @@ class Input implements snow.modules.interfaces.Input {
 
     } //on_keyup
 
-	function mod_state_from_event( _key_event : js.html.KeyboardEvent ) : ModState {
+    function mod_state_from_event( _key_event : js.html.KeyboardEvent ) : ModState {
 
         var _none : Bool =
             !_key_event.altKey &&
@@ -557,10 +568,13 @@ class Input implements snow.modules.interfaces.Input {
                 _x = (_x / _window.width);
                 _y = (_y / _window.height);
 
+            var _touch_id = touch.identifier;
+            touches.set(_touch_id, {last_x: _x, last_y: _y});
+
             system.dispatch_touch_down_event(
                 _x,
                 _y,
-                touch.identifier,
+                _touch_id,
                 system.app.time
             );
         }
@@ -577,10 +591,13 @@ class Input implements snow.modules.interfaces.Input {
                 _x = (_x / _window.width);
                 _y = (_y / _window.height);
 
+            var _touch_id = touch.identifier;
+            touches.remove(_touch_id);
+
             system.dispatch_touch_up_event(
                 _x,
                 _y,
-                touch.identifier,
+                _touch_id,
                 system.app.time
             );
         }
@@ -598,11 +615,19 @@ class Input implements snow.modules.interfaces.Input {
                 _x = (_x / _window.width);
                 _y = (_y / _window.height);
 
+            var _touch_id = touch.identifier;
+            var _cached = touches.get(_touch_id);
+            var _dx:Float = _x - _cached.last_x;
+            var _dy:Float = _y - _cached.last_y;
+
+            _cached.last_x = _x;
+            _cached.last_y = _y;
+
             system.dispatch_touch_move_event(
                 _x,
                 _y,
-                0,
-                0,
+                _dx,
+                _dy,
                 touch.identifier,
                 system.app.time
             );
