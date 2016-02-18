@@ -38,6 +38,9 @@ class Runtime implements snow.core.Runtime {
         /** internal start time, allowing 0 based time values */
     static var timestamp_start : Float = 0.0;
 
+        /** Touch info for deltas */
+    var touches : Map<Int, {var x:Float; var y:Float;}>;
+
     function new(_app:snow.Snow) {
 
         app = _app;
@@ -59,6 +62,8 @@ class Runtime implements snow.core.Runtime {
         };
 
         gamepads_init();
+
+        touches = new Map<Int, {var x:Float; var y:Float;}>();
 
         log('web / init ok');
 
@@ -437,6 +442,8 @@ class Runtime implements snow.core.Runtime {
                         _x = _x/_bound.width;
                         _y = _y/_bound.height;
 
+                    touches.set(touch.identifier, {x: _x, y: _y});
+
                     app.input.dispatch_touch_down_event(
                         _x,
                         _y,
@@ -464,6 +471,38 @@ class Runtime implements snow.core.Runtime {
                     var _y:Float = touch.clientY - _bound.top;
                         _x = _x/_bound.width;
                         _y = _y/_bound.height;
+
+                    touches.remove(touch.identifier);
+
+                    app.input.dispatch_touch_up_event(
+                        _x,
+                        _y,
+                        0, //:todo:web:touch: dx, dy values
+                        0,
+                        touch.identifier,
+                        timestamp()
+                    );
+
+                } //each touch
+
+            }); //touchend
+
+            window.addEventListener('touchcancel', function(_ev:js.html.TouchEvent) {
+
+                if(app.config.runtime.prevent_default_touches) {
+                    _ev.preventDefault();
+                }
+
+                    //:todo:web:touch: test with window_x/y/w/h
+                var _bound = window.getBoundingClientRect();
+                for(touch in _ev.changedTouches) {
+
+                    var _x:Float = touch.clientX - _bound.left;
+                    var _y:Float = touch.clientY - _bound.top;
+                        _x = _x/_bound.width;
+                        _y = _y/_bound.height;
+
+                    touches.remove(touch.identifier);
 
                     app.input.dispatch_touch_up_event(
                         _x,
@@ -493,11 +532,15 @@ class Runtime implements snow.core.Runtime {
                         _x = _x/_bound.width;
                         _y = _y/_bound.height;
 
+                    var _info = touches.get(touch.identifier);
+                    var _dx:Float = _x - _info.x;
+                    var _dy:Float = _y - _info.y;
+
                     app.input.dispatch_touch_move_event(
                         _x,
                         _y,
-                        0, //:todo:web:touch: dx, dy values
-                        0,
+                        _dx,
+                        _dy,
                         touch.identifier,
                         timestamp()
                     );
