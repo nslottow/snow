@@ -133,10 +133,20 @@ class Runtime implements snow.core.Runtime {
         //the window.onresize event handler
     inline function onresize_handler(_) {
 
-        window.style.width = '${js.Browser.window.innerWidth}px';
-        window.style.height = '${js.Browser.window.innerHeight}px';
+        window.style.width = '${get_fullscreen_width()}px';
+        window.style.height = '${get_fullscreen_height()}px';
     
     } //onresize_handler
+
+    //:todo:nslottow: Implement browser detection for quirks.
+    //use js.Browser.window.innerWidth/innerHeight unless iOS9 Safari.
+    static inline function get_fullscreen_width() : Int {
+        return js.Browser.document.documentElement.clientWidth;
+    }
+
+    static inline function get_fullscreen_height() : Int {
+        return js.Browser.document.documentElement.clientHeight;
+    }
 
     public function window_fullscreen(enable:Bool, ?true_fullscreen:Bool=false) : Bool {
 
@@ -155,10 +165,10 @@ class Runtime implements snow.core.Runtime {
 
             window.style.margin = '0';
             window.style.padding = '0';
-            window.style.width = js.Browser.window.innerWidth + 'px';
-            window.style.height = js.Browser.window.innerHeight + 'px';
-            window.width = js.Browser.window.innerWidth;
-            window.height = js.Browser.window.innerHeight;
+            window.style.width = get_fullscreen_width() + 'px';
+            window.style.height = get_fullscreen_height() + 'px';
+            window.width = get_fullscreen_width();
+            window.height = get_fullscreen_height();
 
                 //stop the browser page from having scrollbars etc
             js.Browser.document.body.style.margin = '0';
