@@ -434,7 +434,8 @@ class Audio implements snow.modules.interfaces.Audio {
 
     inline function err(reason:String) {
         var _err = AL.getError();
-        if(_err != AL.NO_ERROR) {
+        // HACK: Don't throw if _err == -1 because this can happen on iOS even though -1 is not a valid error code
+        if(_err != AL.NO_ERROR && _err != -1) {
             var _s = '$_err / $reason: failed with ' + ALError.desc(_err);
             trace(_s);
             throw _s;
