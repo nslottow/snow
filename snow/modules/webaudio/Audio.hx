@@ -407,9 +407,13 @@ class Audio implements snow.modules.interfaces.Audio {
         var _snd = snd_of(_handle);
         if(_snd == null) return 0.0;
 
-        //:todo: web audio position_of
+		var time_start = _snd.time_start;
 
-        return 0.0;
+		if (_snd.state == as_paused) {
+			return _snd.time_pause - time_start;
+		} else {
+			return app.time - time_start;
+		}
 
     } //position_of
 
