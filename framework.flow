@@ -101,7 +101,6 @@
       build : {
         flags:[
           '--macro snow.Set.assets("snow.core.web.assets.Assets")',
-          '--macro snow.Set.audio("snow.modules.webaudio.Audio")',
           '--macro snow.Set.runtime("snow.core.web.Runtime")',
           '--macro snow.Set.io("snow.core.web.io.IO")'
         ],
@@ -110,6 +109,50 @@
         }
       }
     },
+
+	"snow_web && !snow_web_howlerjs" : {
+	  build : {
+		flags:[
+          '--macro snow.Set.audio("snow.modules.webaudio.Audio")'
+		]
+	  }
+	},
+
+	"snow_web && snow_web_howlerjs" : {
+	  app : {
+		web : {
+		  libs : {
+			howlerjs : './lib/howlerjs.min.js'
+		  }
+		}
+	  },
+	  build : {
+		flags:[
+          '--macro snow.Set.audio("snow.modules.howlerjs.Audio")'
+		]
+	  },
+      files : {
+	    howlerjs : { path:'snow/modules/howlerjs/lib/howlerjs.min.js => lib/howlerjs.min.js', not_listed:true }
+	  }
+	},
+
+	"snow_web && snow_web_howlerjs && debug" : {
+	  app : {
+		web : {
+		  libs : {
+			howlerjs : './lib/howlerjs.js'
+		  }
+		}
+	  },
+	  build : {
+		flags:[
+          '--macro snow.Set.audio("snow.modules.howlerjs.Audio")'
+		]
+	  },
+      files : {
+	    howlerjs : { path:'snow/modules/howlerjs/lib/howlerjs.js => lib/howlerjs.js', not_listed:true }
+	  }
+	},
 
     "snow_web && snow_web_psd" : {
       app : {

@@ -58,7 +58,7 @@ class Audio implements snow.modules.interfaces.Audio {
 
         var opt:HowlOptions = {};
 
-            opt.urls = [_source.info.id];
+            opt.urls = [_source.data.id];
             opt.autoplay = !_paused;
             opt.volume = _volume;
             opt.buffer = false;
