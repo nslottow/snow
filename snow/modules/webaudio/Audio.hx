@@ -26,6 +26,7 @@ private typedef WebSound = {
     loop: Bool,
     pan: Float,
     time_start: Float,
+	position_start: Float,
     ?time_pause: Float,
 }
 
@@ -107,6 +108,9 @@ class Audio implements snow.modules.interfaces.Audio {
         _snd.buffer_node.start(0, _start_time);
         _snd.buffer_node.onended = destroy_snd.bind(_snd);
 
+		_snd.position_start = _start_time;
+		_snd.time_start = app.time;
+
     } //play_buffer_again
 
     function play_instance(
@@ -156,6 +160,7 @@ class Audio implements snow.modules.interfaces.Audio {
 
             state       : as_playing,
             time_start  : app.time,
+			position_start : 0,
             loop        : _loop,
             pan         : 0
         };
@@ -408,11 +413,12 @@ class Audio implements snow.modules.interfaces.Audio {
         if(_snd == null) return 0.0;
 
 		var time_start = _snd.time_start;
+		var position_start = _snd.position_start;
 
 		if (_snd.state == as_paused) {
-			return _snd.time_pause - time_start;
+			return _snd.time_pause - time_start + position_start;
 		} else {
-			return app.time - time_start;
+			return app.time - time_start + position_start;
 		}
 
     } //position_of
